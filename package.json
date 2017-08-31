@@ -1,11 +1,11 @@
 {
-  "name": "percy-webdriverio",
-  "version": "0.0.8",
+  "name": "@percy-io/percy-webdriverio",
+  "version": "0.1.0",
   "description": "percy.io integration for webdriver.io",
   "main": "dist/main.js",
   "scripts": {
     "build": "babel src --presets babel-preset-es2015 --out-dir dist",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./test/specs",
     "test": "cd test/specs && wdio",
     "prepublish": "babel src --presets babel-preset-es2015 --out-dir dist",
     "prepare": "babel src --presets babel-preset-es2015 --out-dir dist"
@@ -14,7 +14,6 @@
     "percy-client": "^2.1.0",
     "walk": "^2.3.9",
     "path": "^0.12.7",
-    "percy-client": "^2.1.0",
     "mime-types": "^2.1.16"
   },
   "devDependencies": {

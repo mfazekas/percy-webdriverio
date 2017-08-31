@@ -3,7 +3,6 @@ import Environment from 'percy-client/dist/environment';
 
 import { version } from '../package.json';
 
-import StaticUrlAssetLoader from './staticUrlAssetLoader';
 import FileSystemAssetLoader from './fileSystemAssetLoader';
 
 function parseMissingResources(response) {
@@ -52,6 +51,12 @@ class WebdriverPercy {
     browser.percy.environment = new Environment(process.env);
     browser.percy.percyClient = new PercyClient({ token, apiUrl, clientInfo });
 
+    browser.addCommand('__percyReinit', function async() { // eslint-disable-line prefer-arrow-callback
+      browser.percy = { assetLoaders: [] };
+      browser.percy.environment = new Environment(process.env);
+      browser.percy.percyClient = new PercyClient({ token, apiUrl, clientInfo });
+    });
+
     browser.addCommand('percyFinalizeBuild', function async() { // eslint-disable-line prefer-arrow-callback
       const percy = browser.percy;
       const percyClient = browser.percy.percyClient;
@@ -74,9 +79,6 @@ class WebdriverPercy {
     browser.addCommand('percyUseAssetLoader', (type, options) => {
       const percy = browser.percy;
       switch (type) {
-      case 'static-url':
-        percy.assetLoaders.push(new StaticUrlAssetLoader(options));
-        break;
       case 'filesystem':
         percy.assetLoaders.push(new FileSystemAssetLoader(options));
         break;
@@ -104,7 +106,7 @@ class WebdriverPercy {
         });
       }
       return new Promise((resolve, reject) => {
-        browserInstance.getSource().then((source) => {
+        Promise.resolve(browserInstance.getSource()).then((source) => {
           percy.createBuild.then((buildId) => {
             const rootResource = percyClient.makeResource({
               resourceUrl: '/',
@@ -142,6 +144,9 @@ class WebdriverPercy {
                     reject(err);
                   });
                 });
+            }).catch((err) => {
+              browser.logger.error(`percy snapshot failed to gatherSnapshotResources: ${err}`);
+              reject(err);
             });
           }).catch((err) => {
             browser.logger.error(`percy snapshot failed to createBuild: ${err}`);
